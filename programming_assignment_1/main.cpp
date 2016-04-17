@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <iostream>
 #include <vector>
+#include <cassert>
 
 const char* cipher_text[] = 
 {
@@ -36,12 +37,40 @@ unsigned char HexTextToBinary(const char text)
 	}
 }
 
-std::vector<std::vector<unsigned char>>  InputData(const char* input, size_t count)
+void PrintAsHex(const std::vector<std::vector<unsigned char>>& input)
 {
-	std::vector<std::vector<unsigned char>> return_val;
+	static const char hex_table[] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
+	for (size_t i = 0; i < input.size(); ++i)
+	{
+		for (size_t j = 0; j < input[i].size(); ++j)
+		{
+			std::cout << hex_table[(input[i][j] >> 4)] << hex_table[input[i][j] & 0x0F];
+		}
+		std::cout << std::endl << std::endl;
+	}
+}
+
+void PrintAsText(const std::vector<std::vector<unsigned char>>& input)
+{
+	for (size_t i = 0; i < input.size(); ++i)
+	{
+		for (size_t j = 0; j < input[i].size(); ++j)
+		{
+			unsigned char val = input[i][j];
+			if (isprint(val))
+				std::cout << (char)(input[i][j]);
+			else
+				std::cout << (char)(input[i][j]);
+		}
+		std::cout << std::endl;
+	}
+}
+std::vector<std::vector<unsigned char>>  InputData(const char** input, size_t count)
+{
+	std::vector<std::vector<unsigned char>> return_val(count);
 	for (size_t i = 0; i < count; ++i)
 	{
-		unsigned char* now = input[i];
+		const char* now = input[i];
 		while(*now != '\0')
 		{
 			unsigned char val = HexTextToBinary(now[0]) * 16 + HexTextToBinary(now[1]);
@@ -50,18 +79,50 @@ std::vector<std::vector<unsigned char>>  InputData(const char* input, size_t cou
 		}
 	}
 
-	// test
-	static const char hex_table[] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
-	for (size_t i = 0; i < return_val.size(); ++i)
+	return std::move(return_val);
+}
+
+void Trim(std::vector<std::vector<unsigned char>>& input)
+{
+	size_t desired_size = input[input.size()-1].size();
+	for (size_t i = 0; i < input.size(); ++i)
 	{
-		for (size_t j = 0; j < return_val[i].size(); ++j)
+		input[i].resize(desired_size);
+	}
+}
+
+void Xor(std::vector<std::vector<unsigned char>>& input)
+{
+	size_t str_len = input[0].size();
+
+	for (size_t i = 0; i < input.size(); ++i)
+	{
+		for (size_t j = 0; j < input.size(); ++j)
 		{
-			std::cout << hex_table[(bin[i] >> 4)] << hex_table[bin[i] & 0x0F];
+			if (i == j) continue;
+			std::cout << i << "," << j << ": ";
+			for (size_t k = 0; k < str_len; ++k)
+			{
+				unsigned char val = input[i][k] ^ input[j][k];
+				if (isprint(val))
+				{
+					std::cout << (char) (input[i][k] ^ input[j][k]);
+				}
+				else
+				{
+					if (val == 0)
+						std::cout << "0";
+					else
+						std::cout << ".";
+
+				}
+			}
+			std::cout << std::endl;
 		}
 		std::cout << std::endl;
 	}
-	return std::move(return_val);
 }
+
 
 int main(int argc, char* argv[])
 {
@@ -69,6 +130,11 @@ int main(int argc, char* argv[])
 	std::vector<unsigned char> cipher_to_decrypt;
 
 	processed_input = InputData(cipher_text, sizeof(cipher_text) / sizeof(cipher_text[0]));
+	Trim(processed_input);
+	PrintAsHex(processed_input);
+	std::cout << "---------------------" << std::endl << std::endl;
+	Xor(processed_input);
+
 	
 	return 0;
 }
