@@ -97,10 +97,12 @@ void Xor(std::vector<std::vector<unsigned char>>& input)
 
 	for (size_t i = 0; i < input.size(); ++i)
 	{
+		printf("       012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\n");
 		for (size_t j = 0; j < input.size(); ++j)
 		{
 			if (i == j) continue;
-			std::cout << i << "," << j << ": ";
+			//std::cout << i << "," << j << ": ";
+			printf("%02u,%02u: ", (unsigned int)i, (unsigned int)j);
 			for (size_t k = 0; k < str_len; ++k)
 			{
 				unsigned char val = input[i][k] ^ input[j][k];
@@ -175,6 +177,50 @@ void Xor2(const std::vector<std::vector<unsigned char>>& input)
 	}
 }
 
+void Attempt1(const std::vector<std::vector<unsigned char>>& input)
+{
+	size_t cipher_txt_cnt = input.size();
+	size_t cipher_txt_len = input[0].size();
+	const std::vector<unsigned char>& target = input[cipher_txt_cnt - 1];
+
+	std::vector<unsigned char> answer(cipher_txt_len, '.');
+	for (size_t i = 0; i < cipher_txt_len; ++i)
+	{
+		for (size_t j = 0; j < cipher_txt_cnt; ++j)
+		{
+			bool is_space = true;
+			std::vector<unsigned char> trace;
+			for (size_t k = 0; k < cipher_txt_cnt; ++k)
+			{
+				unsigned char val = input[j][i] ^ input[k][i];
+				if (!((val >= 'a' && val <= 'z') || (val >= 'A' && val <= 'Z') || (val == 0)))
+				{
+					is_space = false;
+					trace.clear();
+					continue;
+				}
+				trace.push_back(val);
+			}
+			if (is_space)
+			{
+				std::for_each(trace.begin(), trace.end(), [](unsigned char val){ PrintAsChar(val); });
+				unsigned char tmp = target[i] ^ input[j][i];
+				if (tmp >= 'a' && tmp <= 'z')
+					tmp = tmp - 'a' + 'A';
+				else if (tmp >= 'A' && tmp <= 'Z')
+					tmp = tmp - 'A' + 'a';
+				else
+					tmp = ' ';
+				answer[i] = tmp;
+				printf(" : %uth char row %u (%c)\n", (unsigned int)i, (unsigned int)j, tmp);
+			}
+		}
+	}
+
+	printf("answer is: ");
+	std::for_each(std::begin(answer), std::end(answer), [](unsigned char val) { PrintAsChar(val);});
+	printf("\n");
+}
 
 int main(int argc, char* argv[])
 {
@@ -187,6 +233,7 @@ int main(int argc, char* argv[])
 	std::cout << "ciphertxt len: " << processed_input[0].size() << " count: " << processed_input.size() << std::endl;
 	Xor(processed_input);
 	Xor2(processed_input);
+	Attempt1(processed_input);
 
 	
 	return 0;
