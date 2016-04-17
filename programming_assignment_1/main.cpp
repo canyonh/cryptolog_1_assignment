@@ -123,6 +123,58 @@ void Xor(std::vector<std::vector<unsigned char>>& input)
 	}
 }
 
+void PrintAsChar(unsigned char ch)
+{
+	if (isprint(ch))
+	{
+		std::cout << (char) ch;
+	}
+	else
+	{
+		if (ch  == 0)
+			std::cout << "0";
+		else
+			std::cout << ".";
+	}
+}
+
+void PrintAsTxt(const std::vector<unsigned char>& txt)
+{
+	for (size_t i = 0; i < txt.size(); ++i)
+	{
+		if (isprint(txt[i]))
+		{
+			std::cout << (char) txt[i];
+		}
+		else
+		{
+			if (txt[i] == 0)
+				std::cout << "0";
+			else
+				std::cout << ".";
+		}
+	}
+	std::cout << std::endl;
+}
+
+void Xor2(const std::vector<std::vector<unsigned char>>& input)
+{
+	size_t cipher_txt_cnt = input.size() - 1;
+	size_t cipher_txt_len = input[0].size();
+	const std::vector<unsigned char>& target = input[cipher_txt_cnt];
+
+	for (size_t i = 0; i < cipher_txt_len; ++i)
+	{
+		std::cout << "char " << i << ": ";
+		for (size_t j = 0; j < cipher_txt_cnt; ++j)
+		{
+			unsigned char val = input[j][i] ^ target[i];
+			PrintAsChar(val);
+		}
+		std::cout << std::endl;
+	}
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -132,8 +184,9 @@ int main(int argc, char* argv[])
 	processed_input = InputData(cipher_text, sizeof(cipher_text) / sizeof(cipher_text[0]));
 	Trim(processed_input);
 	PrintAsHex(processed_input);
-	std::cout << "---------------------" << std::endl << std::endl;
+	std::cout << "ciphertxt len: " << processed_input[0].size() << " count: " << processed_input.size() << std::endl;
 	Xor(processed_input);
+	Xor2(processed_input);
 
 	
 	return 0;
